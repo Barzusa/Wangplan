@@ -1,7 +1,7 @@
-const CACHE_VERSION = 'v2026-05-21-offline';
+const CACHE_VERSION = 'v2026-05-22-network-first';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
-// ไฟล์ที่ต้อง cache ตั้งแต่ครั้งแรก
+// ไฟล์ที่ต้อง cache ไว้ใช้ตอน offline
 const APP_SHELL = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ const APP_SHELL = [
   './wangplan_icon.svg'
 ];
 
-// Install: cache ทุกไฟล์ทันที
+// Install: cache ทุกไฟล์ทันที แล้วข้ามไปทำงานเลย
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
@@ -20,7 +20,7 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activate: ลบ cache เก่า
+// Activate: ลบ cache เก่าทุกเวอร์ชัน แล้วคุมทุกแท็บทันที
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -30,7 +30,8 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: Cache First → ใช้ cache ก่อนเสมอ (offline-first)
+// Fetch: Network First → ลองโหลดของใหม่จากเน็ตก่อนเสมอ
+// ถ้าโหลดได้ใช้ของใหม่ + อัปเดต cache; ถ้าไม่มีเน็ตค่อยใช้ cache (offline ได้)
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
@@ -42,21 +43,20 @@ self.addEventListener('fetch', e => {
       url.hostname.includes('script.google.com')) return;
 
   e.respondWith(
-    caches.open(CACHE_NAME).then(cache =>
-      cache.match(e.request).then(cached => {
-        if (cached) return cached; // มี cache → ใช้เลย (offline ได้)
-
-        // ไม่มี cache → ดึง network แล้ว cache ไว้
-        return fetch(e.request).then(res => {
-          if (res && res.status === 200) {
-            cache.put(e.request, res.clone());
-          }
-          return res;
-        }).catch(() =>
-          // ไม่มีเน็ต ไม่มี cache → fallback ไป index.html
-          e.request.mode === 'navigate' ? cache.match('./index.html') : undefined
-        );
-      })
+    fetch(e.request).then(res => {
+      // โหลดจากเน็ตได้ → เก็บลง cache ไว้เผื่อ offline แล้วคืนของใหม่
+      if (res && res.status === 200) {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
+      }
+      return res;
+    }).catch(() =>
+      // ไม่มีเน็ต → ใช้ของเก่าจาก cache
+      caches.open(CACHE_NAME).then(cache =>
+        cache.match(e.request).then(cached =>
+          cached || (e.request.mode === 'navigate' ? cache.match('./index.html') : undefined)
+        )
+      )
     )
   );
 });
