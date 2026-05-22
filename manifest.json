@@ -1,0 +1,39 @@
+{
+  "name": "WangPlan",
+  "short_name": "WangPlan",
+  "description": "Premium Calculator + Fact Finding + Tax Planning",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#030c2e",
+  "theme_color": "#0c2d9a",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "wangplan_icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": [
+    "finance",
+    "business"
+  ],
+  "lang": "th",
+  "prefer_related_applications": false
+}
