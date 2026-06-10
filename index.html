@@ -592,13 +592,108 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var pad = function(n){ return n < 10 ? '0'+n : ''+n; };
           var stamp = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate())
                     + '-' + pad(d.getHours()) + pad(d.getMinutes());
-          // Try to extract a customer/plan name from heading text
           var title = '';
           var h = document.querySelector('main h1, main h2, #root h1, #root h2');
           if (h && h.textContent) {
             title = h.textContent.trim().replace(/[\\/:*?"<>|]/g,'').slice(0,40);
           }
           return 'WangPlan-' + (title ? title + '-' : '') + stamp + '.pdf';
+        }
+
+        // Walk up to find a "card-like" ancestor (rounded, has background/border)
+        function findCardAncestor(el){
+          var node = el;
+          var best = null;
+          for (var i = 0; i < 12 && node && node !== document.body; i++) {
+            try {
+              var cs = window.getComputedStyle(node);
+              var radius = parseFloat(cs.borderTopLeftRadius) || 0;
+              var hasBg = cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent';
+              var hasShadow = cs.boxShadow && cs.boxShadow !== 'none';
+              if (radius >= 8 && (hasBg || hasShadow) && node.offsetHeight > 120) {
+                best = node;
+              }
+            } catch(_) {}
+            node = node.parentElement;
+          }
+          return best || el;
+        }
+
+        // Find element whose visible text starts with / equals given Thai text
+        function findByText(text){
+          var all = document.querySelectorAll('#root *');
+          for (var i = 0; i < all.length; i++) {
+            var n = all[i];
+            if (n.children.length > 6) continue; // skip big containers
+            var t = (n.textContent || '').trim();
+            if (t === text || t.indexOf(text) === 0 && t.length < text.length + 30) {
+              return n;
+            }
+          }
+          return null;
+        }
+
+        function findSummaryCard(){
+          var label = findByText('สรุปเบี้ยประกันภัย');
+          if (!label) return null;
+          return findCardAncestor(label);
+        }
+
+        function findCompareCard(){
+          // Look for comparison-related headings
+          var keys = ['ตารางเปรียบเทียบ', 'เปรียบเทียบแผน', 'เปรียบเทียบ'];
+          for (var i = 0; i < keys.length; i++) {
+            var n = findByText(keys[i]);
+            if (n) {
+              var card = findCardAncestor(n);
+              // Make sure it's a different card than the summary
+              if (card && card.offsetHeight > 80) return card;
+            }
+          }
+          return null;
+        }
+
+        async function captureElement(el){
+          return await html2canvas(el, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            windowWidth: Math.max(el.scrollWidth, el.offsetWidth),
+            scrollX: 0,
+            scrollY: -window.scrollY
+          });
+        }
+
+        function addCanvasToPdf(pdf, canvas, isFirstOnDoc){
+          var pageW = pdf.internal.pageSize.getWidth();
+          var pageH = pdf.internal.pageSize.getHeight();
+          var margin = 8; // mm
+          var imgW = pageW - margin * 2;
+          var imgH = canvas.height * imgW / canvas.width;
+          var imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+          if (imgH <= pageH - margin * 2) {
+            if (!isFirstOnDoc) pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH, undefined, 'FAST');
+            return;
+          }
+          // Multi-page: split the tall image across A4 pages
+          var pxPerMm = canvas.width / imgW;
+          var pageContentHpx = (pageH - margin * 2) * pxPerMm;
+          var rendered = 0;
+          var first = true;
+          while (rendered < canvas.height) {
+            var sliceH = Math.min(pageContentHpx, canvas.height - rendered);
+            var slice = document.createElement('canvas');
+            slice.width = canvas.width;
+            slice.height = sliceH;
+            slice.getContext('2d').drawImage(canvas, 0, rendered, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+            var sliceData = slice.toDataURL('image/jpeg', 0.92);
+            if (!(first && isFirstOnDoc)) pdf.addPage();
+            pdf.addImage(sliceData, 'JPEG', margin, margin, imgW, sliceH / pxPerMm, undefined, 'FAST');
+            rendered += sliceH;
+            first = false;
+          }
         }
 
         async function exportPDF(){
@@ -608,41 +703,31 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           }
           var btn = document.getElementById('wp-pdf-fab');
           if (btn) btn.disabled = true;
-          var target = document.getElementById('root');
-          if (!target) {
+
+          var summary = findSummaryCard();
+          var compare = findCompareCard();
+          var targets = [];
+          if (summary) targets.push(summary);
+          if (compare && compare !== summary) targets.push(compare);
+          if (targets.length === 0) {
+            // Fallback: capture whole root
+            var root = document.getElementById('root');
+            if (root) targets.push(root);
+          }
+          if (targets.length === 0) {
             if (btn) btn.disabled = false;
             return;
           }
+
           showToast('กำลังสร้าง PDF...', 8000);
           document.body.classList.add('wp-pdf-capturing');
           try {
-            // Wait a tick so visibility:hidden applies before snapshot
             await new Promise(function(r){ setTimeout(r, 80); });
-            var canvas = await html2canvas(target, {
-              scale: 2,
-              useCORS: true,
-              backgroundColor: '#ffffff',
-              windowWidth: target.scrollWidth,
-              windowHeight: target.scrollHeight,
-              scrollX: 0,
-              scrollY: -window.scrollY
-            });
             var jsPDF = window.jspdf.jsPDF;
             var pdf = new jsPDF('p', 'mm', 'a4');
-            var pageW = pdf.internal.pageSize.getWidth();
-            var pageH = pdf.internal.pageSize.getHeight();
-            var imgW = pageW;
-            var imgH = canvas.height * imgW / canvas.width;
-            var heightLeft = imgH;
-            var position = 0;
-            var imgData = canvas.toDataURL('image/jpeg', 0.92);
-            pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH, undefined, 'FAST');
-            heightLeft -= pageH;
-            while (heightLeft > 0) {
-              position = heightLeft - imgH;
-              pdf.addPage();
-              pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH, undefined, 'FAST');
-              heightLeft -= pageH;
+            for (var i = 0; i < targets.length; i++) {
+              var canvas = await captureElement(targets[i]);
+              addCanvasToPdf(pdf, canvas, i === 0);
             }
             pdf.save(buildFileName());
             showToast('บันทึก PDF สำเร็จ', 1800);
@@ -661,7 +746,7 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           btn.id = 'wp-pdf-fab';
           btn.className = 'wp-pdf-fab';
           btn.type = 'button';
-          btn.title = 'ส่งออกหน้านี้เป็น PDF';
+          btn.title = 'ส่งออกใบเสนอราคาเป็น PDF';
           btn.setAttribute('aria-label', 'ส่งออก PDF');
           btn.innerHTML = 'PDF';
           btn.addEventListener('click', exportPDF);
