@@ -607,10 +607,13 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             return Promise.resolve();
           }
           return window.html2canvas(target,{
-            scale:2,useCORS:true,backgroundColor:'#f9fafb',logging:false,
+            scale:Math.min(2,window.devicePixelRatio||1.5),
+            useCORS:true,allowTaint:true,foreignObjectRendering:false,
+            backgroundColor:'#f9fafb',logging:false,imageTimeout:0,
             scrollX:0,scrollY:-window.scrollY,
             windowWidth:document.documentElement.offsetWidth,
-            windowHeight:document.documentElement.offsetHeight
+            windowHeight:document.documentElement.offsetHeight,
+            ignoreElements:function(el){return el&&el.classList&&(el.classList.contains('wp-pdf-button')||el.classList.contains('wp-bottom-nav')||el.id==='wp-pdf-toast-wrap')}
           }).then(function(canvas){
             var jsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
             var pdf=new jsPDF('p','mm','a4');
@@ -632,7 +635,8 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             toast('บันทึกสำเร็จ','success');
           }).catch(function(err){
             console.error('PDF export error:',err);
-            toast('เกิดข้อผิดพลาด กรุณาลองใหม่','error');
+            var msg=(err&&err.message?err.message:String(err)).slice(0,80);
+            toast('PDF ผิดพลาด: '+msg,'error');
           }).then(function(){
             if(btn)btn.style.visibility=btnVis;
             if(nav)nav.style.visibility=navVis;
