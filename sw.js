@@ -1,5 +1,10 @@
-const CACHE_VERSION = 'v2026-05-22-network-first';
+const CACHE_VERSION = 'v2026-06-11-auto-update';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
+
+// รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
 // ไฟล์ที่ต้อง cache ไว้ใช้ตอน offline
 const APP_SHELL = [
