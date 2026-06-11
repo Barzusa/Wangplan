@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-06-11-pdf-ic-column';
+const CACHE_VERSION = 'v2026-06-11-no-plan-state';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
