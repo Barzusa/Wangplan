@@ -640,11 +640,17 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             ignoreElements:function(el){return el&&el.classList&&(el.classList.contains('wp-pdf-button')||el.classList.contains('wp-bottom-nav')||el.classList.contains('wp-pdf-hide')||el.id==='wp-pdf-toast-wrap')}
           }).then(function(canvas){
             var jsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
+            var pdf=new jsPDF('p','mm','a4');
+            var pageW=210,pageH=297;
             var imgData=canvas.toDataURL('image/jpeg',0.92);
-            var w=210;
-            var h=canvas.height*w/canvas.width;
-            var pdf=new jsPDF({orientation:'p',unit:'mm',format:[w,h]});
-            pdf.addImage(imgData,'JPEG',0,0,w,h);
+            var margin=6;
+            var availW=pageW-margin*2;
+            var availH=pageH-margin*2;
+            var ratio=canvas.width/canvas.height;
+            var w=availW, h=availW/ratio;
+            if(h>availH){h=availH; w=availH*ratio;}
+            var x=(pageW-w)/2, y=(pageH-h)/2;
+            pdf.addImage(imgData,'JPEG',x,y,w,h);
             pdf.save(filename(title));
             toast('บันทึกสำเร็จ','success');
           }).catch(function(err){
