@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-06-11-pdf-full-content-page';
+const CACHE_VERSION = 'v2026-06-11-pdf-revert-a4';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
