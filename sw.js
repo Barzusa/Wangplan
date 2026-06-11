@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-06-11-total-row-solid-red';
+const CACHE_VERSION = 'v2026-06-11-total-row-b71c3a';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
