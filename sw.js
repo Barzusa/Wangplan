@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-06-14-pdf-add-total-col';
+const CACHE_VERSION = 'v2026-06-14-client-name-same-size';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
