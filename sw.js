@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-06-15-ci-hero-2-cases';
+const CACHE_VERSION = 'v2026-06-15-cpp-examples';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
