@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-06-15-subtitle-fixes';
+const CACHE_VERSION = 'v2026-06-15-strip-rider-subtitles';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
