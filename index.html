@@ -633,28 +633,22 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var origMinWidth=target.style.minWidth;
           var scrollWrappers=target.querySelectorAll('.overflow-x-auto');
           var origOverflows=[];
-          var maxInner=0;
-          scrollWrappers.forEach(function(el){origOverflows.push(el.style.overflow);el.style.overflow='visible';if(el.scrollWidth>maxInner)maxInner=el.scrollWidth;});
-          var needW=Math.max(1280,maxInner+56);
+          scrollWrappers.forEach(function(el){origOverflows.push(el.style.overflow);el.style.overflow='visible';});
           target.style.position='static';
           target.style.top='auto';
-          target.style.width=needW+'px';
-          target.style.minWidth=needW+'px';
+          target.style.minWidth='1280px';
           target.offsetHeight;
-          var capW=Math.max(target.scrollWidth,needW);
           return window.html2canvas(target,{
             scale:Math.max(3,window.devicePixelRatio||2),
             useCORS:true,allowTaint:true,foreignObjectRendering:false,
             backgroundColor:'#f9fafb',logging:false,imageTimeout:0,
             scrollX:0,scrollY:-window.scrollY,
-            width:capW,
-            height:target.scrollHeight,
-            windowWidth:capW,
+            windowWidth:Math.max(target.scrollWidth,1280),
             windowHeight:Math.max(target.scrollHeight,document.documentElement.offsetHeight),
             ignoreElements:function(el){return el&&el.classList&&(el.classList.contains('wp-pdf-button')||el.classList.contains('wp-bottom-nav')||el.classList.contains('wp-pdf-hide')||el.id==='wp-pdf-toast-wrap')}
           }).then(function(canvas){
+            var imgData=canvas.toDataURL('image/png');
             if(opts.format==='png'){
-              var imgData=canvas.toDataURL('image/png');
               var fname=filename(title).replace(/\.pdf$/i,'.png');
               var a=document.createElement('a');
               a.href=imgData;
@@ -665,14 +659,13 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
               toast('บันทึก PNG สำเร็จ','success');
               return;
             }
-            var jpg=canvas.toDataURL('image/jpeg',0.95);
             var jsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
             var pageW=210;
             var pageH=Math.round(canvas.height*pageW/canvas.width);
             if(!isFinite(pageH)||pageH<10)pageH=297;
-            if(pageH>5000)pageH=5000;
-            var pdf=new jsPDF({orientation:'p',unit:'mm',format:[pageW,pageH],compress:true});
-            pdf.addImage(jpg,'JPEG',0,0,pageW,pageH,undefined,'FAST');
+            if(pageH>14000)pageH=14000;
+            var pdf=new jsPDF('p','mm',[pageW,pageH]);
+            pdf.addImage(imgData,'PNG',0,0,pageW,pageH,undefined,'FAST');
             pdf.save(filename(title));
             toast('บันทึกสำเร็จ','success');
           }).catch(function(err){
