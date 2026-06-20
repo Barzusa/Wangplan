@@ -633,17 +633,23 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var origMinWidth=target.style.minWidth;
           var scrollWrappers=target.querySelectorAll('.overflow-x-auto');
           var origOverflows=[];
-          scrollWrappers.forEach(function(el){origOverflows.push(el.style.overflow);el.style.overflow='visible';});
+          var maxInner=0;
+          scrollWrappers.forEach(function(el){origOverflows.push(el.style.overflow);el.style.overflow='visible';if(el.scrollWidth>maxInner)maxInner=el.scrollWidth;});
+          var needW=Math.max(1280,maxInner+56);
           target.style.position='static';
           target.style.top='auto';
-          target.style.minWidth='1280px';
+          target.style.width=needW+'px';
+          target.style.minWidth=needW+'px';
           target.offsetHeight;
+          var capW=Math.max(target.scrollWidth,needW);
           return window.html2canvas(target,{
             scale:Math.max(3,window.devicePixelRatio||2),
             useCORS:true,allowTaint:true,foreignObjectRendering:false,
             backgroundColor:'#f9fafb',logging:false,imageTimeout:0,
             scrollX:0,scrollY:-window.scrollY,
-            windowWidth:Math.max(target.scrollWidth,1280),
+            width:capW,
+            height:target.scrollHeight,
+            windowWidth:capW,
             windowHeight:Math.max(target.scrollHeight,document.documentElement.offsetHeight),
             ignoreElements:function(el){return el&&el.classList&&(el.classList.contains('wp-pdf-button')||el.classList.contains('wp-bottom-nav')||el.classList.contains('wp-pdf-hide')||el.id==='wp-pdf-toast-wrap')}
           }).then(function(canvas){
