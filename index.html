@@ -651,9 +651,23 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           }).then(function(canvas){
             var imgData=canvas.toDataURL('image/png');
             if(opts.format==='png'){
+              var _pngData=imgData;
+              try{
+                var _maxSide=2000;
+                var _r=Math.min(1,_maxSide/Math.max(canvas.width,canvas.height));
+                if(_r<1){
+                  var _oc=document.createElement('canvas');
+                  _oc.width=Math.round(canvas.width*_r);
+                  _oc.height=Math.round(canvas.height*_r);
+                  var _cx=_oc.getContext('2d');
+                  _cx.imageSmoothingEnabled=true;_cx.imageSmoothingQuality='high';
+                  _cx.drawImage(canvas,0,0,_oc.width,_oc.height);
+                  _pngData=_oc.toDataURL('image/png');
+                }
+              }catch(_e){_pngData=imgData;}
               var fname=filename(title).replace(/\.pdf$/i,'.png');
               var a=document.createElement('a');
-              a.href=imgData;
+              a.href=_pngData;
               a.download=fname;
               document.body.appendChild(a);
               a.click();
