@@ -653,15 +653,21 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             if(opts.format==='png'){
               var _pngData=imgData;
               try{
-                var _maxSide=2000;
+                var _maxSide=2560;
                 var _r=Math.min(1,_maxSide/Math.max(canvas.width,canvas.height));
                 if(_r<1){
-                  var _oc=document.createElement('canvas');
-                  _oc.width=Math.round(canvas.width*_r);
-                  _oc.height=Math.round(canvas.height*_r);
-                  var _cx=_oc.getContext('2d');
-                  _cx.imageSmoothingEnabled=true;_cx.imageSmoothingQuality='high';
-                  _cx.drawImage(canvas,0,0,_oc.width,_oc.height);
+                  var _tw=Math.round(canvas.width*_r),_th=Math.round(canvas.height*_r);
+                  var _cur=canvas,_cw=canvas.width,_ch=canvas.height;
+                  while(_cw>_tw*2&&_ch>_th*2){
+                    var _hw=Math.round(_cw/2),_hh=Math.round(_ch/2);
+                    var _hc=document.createElement('canvas');_hc.width=_hw;_hc.height=_hh;
+                    var _hx=_hc.getContext('2d');_hx.imageSmoothingEnabled=true;_hx.imageSmoothingQuality='high';
+                    _hx.drawImage(_cur,0,0,_hw,_hh);
+                    _cur=_hc;_cw=_hw;_ch=_hh;
+                  }
+                  var _oc=document.createElement('canvas');_oc.width=_tw;_oc.height=_th;
+                  var _cx=_oc.getContext('2d');_cx.imageSmoothingEnabled=true;_cx.imageSmoothingQuality='high';
+                  _cx.drawImage(_cur,0,0,_tw,_th);
                   _pngData=_oc.toDataURL('image/png');
                 }
               }catch(_e){_pngData=imgData;}
