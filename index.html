@@ -614,8 +614,9 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             return Promise.resolve();
           }
           toast('กำลังสร้าง '+(isPng?'PNG':'PDF')+'...');
-          var wpGrid=null;
-          if(isPng){wpGrid=document.createElement('style');wpGrid.textContent='.wp-cmp-table{border-collapse:collapse!important;border:2px solid #94a3b8!important}.wp-cmp-table th,.wp-cmp-table td{border:1px solid #cbd5e1!important}.wp-cmp-table thead th{border-bottom:3px solid #64748b!important}';document.head.appendChild(wpGrid);}
+          var wpGrid=document.createElement('style');
+          wpGrid.textContent='.wp-cmp-table{border-collapse:collapse!important;border:2px solid #94a3b8!important}.wp-cmp-table th,.wp-cmp-table td{border:1px solid #cbd5e1!important}.wp-cmp-table thead th{border-bottom:3px solid #64748b!important}';
+          document.head.appendChild(wpGrid);
           var btns=document.querySelectorAll('.wp-pdf-button');
           var nav=document.querySelector('.wp-bottom-nav');
           var btnVis=[];
