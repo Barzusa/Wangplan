@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-07-02-lti-99-9-plan';
+const CACHE_VERSION = 'v2026-07-02-lti-99-9-premium-input';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
