@@ -604,6 +604,18 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var timeStr=pad(d.getHours())+pad(d.getMinutes());
           return 'WangPlan-'+sanitize(title)+'-'+dateStr+'-'+timeStr+'.pdf';
         }
+        function autoCropCanvas(cv,pad){
+          var w=cv.width,h=cv.height,ctx=cv.getContext('2d'),data;
+          try{data=ctx.getImageData(0,0,w,h).data;}catch(e){return cv;}
+          var minX=w,minY=h,maxX=0,maxY=0,found=false;
+          for(var y=0;y<h;y++){for(var x=0;x<w;x++){var i=(y*w+x)*4;
+            if(!(data[i]>244&&data[i+1]>244&&data[i+2]>244)){found=true;
+              if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}}
+          if(!found)return cv;pad=pad||0;
+          minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);maxX=Math.min(w-1,maxX+pad);maxY=Math.min(h-1,maxY+pad);
+          var cw=maxX-minX+1,ch=maxY-minY+1,oc=document.createElement('canvas');oc.width=cw;oc.height=ch;
+          oc.getContext('2d').drawImage(cv,minX,minY,cw,ch,0,0,cw,ch);return oc;
+        }
         function exportPDF(opts){
           opts=opts||{};
           var title=opts.title||'สรุปเบี้ยประกันภัย';
@@ -617,6 +629,8 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var wpGrid=document.createElement('style');
           wpGrid.textContent='.wp-cmp-table{border-collapse:collapse!important;border:2px solid #94a3b8!important}.wp-cmp-table th,.wp-cmp-table td{border:1px solid #cbd5e1!important}.wp-cmp-table thead th{border-bottom:3px solid #64748b!important}.wp-rider-item{border-bottom:1px solid #e2e8f0!important;padding-bottom:10px!important}';
           document.head.appendChild(wpGrid);
+          var wpCompact=null;
+          if(isPng){wpCompact=document.createElement('style');wpCompact.textContent='#proposal-target .space-y-4>:not([hidden])~:not([hidden]){margin-top:8px!important}#proposal-target .mb-4{margin-bottom:8px!important}#proposal-target .pb-3{padding-bottom:6px!important}#proposal-target .mt-4{margin-top:8px!important}#proposal-target .pt-4{padding-top:8px!important}#proposal-target p{line-height:1.25!important}#proposal-target .mt-1\\.5{margin-top:2px!important}#proposal-target .wp-rider-item{padding-bottom:6px!important}';document.head.appendChild(wpCompact);}
           var btns=document.querySelectorAll('.wp-pdf-button');
           var nav=document.querySelector('.wp-bottom-nav');
           var btnVis=[];
@@ -652,9 +666,11 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           }).then(function(canvas){
             var imgData=canvas.toDataURL('image/png');
             if(opts.format==='png'){
+              var _pngData=imgData;
+              try{_pngData=autoCropCanvas(canvas,8).toDataURL('image/png');}catch(_e){_pngData=imgData;}
               var fname=filename(title).replace(/\.pdf$/i,'.png');
               var a=document.createElement('a');
-              a.href=imgData;
+              a.href=_pngData;
               a.download=fname;
               document.body.appendChild(a);
               a.click();
@@ -682,7 +698,7 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             target.style.top=origTop;
             target.style.width=origWidth;
             target.style.minWidth=origMinWidth;
-            if(wpGrid&&wpGrid.parentNode)wpGrid.parentNode.removeChild(wpGrid);scrollWrappers.forEach(function(el,i){el.style.overflow=origOverflows[i]||'';});
+            if(wpGrid&&wpGrid.parentNode)wpGrid.parentNode.removeChild(wpGrid);if(wpCompact&&wpCompact.parentNode)wpCompact.parentNode.removeChild(wpCompact);scrollWrappers.forEach(function(el,i){el.style.overflow=origOverflows[i]||'';});
           });
         }
         return {export:exportPDF,toast:toast,filename:filename};
