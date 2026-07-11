@@ -809,12 +809,21 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           field("เป้าหมาย (กี่เดือนของรายจ่าย)",plainNum("emergencyFundMonths","6")))),
       // 5. ประกันที่มีอยู่
       card("ประกันที่มีอยู่ปัจจุบัน","🛡️","border-blue-100",
-        moneyList([
-          {label:"ทุนประกันชีวิต (รวม)",field:"exLifeCover"},
-          {label:"วงเงินค่ารักษาพยาบาล / ปี",field:"exHealthCover"},
-          {label:"ทุนประกันโรคร้ายแรง",field:"exCICover"},
-          {label:"ทุนประกันอุบัติเหตุ",field:"exAccidentCover"},
-          {label:"เบี้ยประกันรวมที่จ่ายอยู่ / ปี",field:"exAnnualPremium"}])),
+        h("div",{className:"space-y-3"},
+          moneyList([
+            {label:"ทุนประกันชีวิต (รวม)",field:"exLifeCover"},
+            {label:"วงเงินค่ารักษาพยาบาล / ปี",field:"exHealthCover"},
+            {label:"ทุนประกันโรคร้ายแรง",field:"exCICover"},
+            {label:"ทุนประกันอุบัติเหตุ",field:"exAccidentCover"}]),
+          h("div",{className:"pt-1"},
+            h("p",{className:"text-[11px] font-bold text-blue-700 mb-1"},"เบี้ยประกันที่จ่ายอยู่ / ปี ",h("span",{className:"font-normal text-gray-400"},"(↔ ซิงค์กับงบกระแสเงินสด)")),
+            moneyList([
+              {label:"เบี้ยประกันชีวิต / ปี",field:"cf_life_insurance"},
+              {label:"เบี้ยประกันสุขภาพ / ปี",field:"cf_health_insurance"},
+              {label:"เบี้ยประกันรถ / ปี",field:"cf_car_insurance"}]),
+            h("div",{className:"flex items-center justify-between pt-1.5 mt-1 border-t border-blue-100"},
+              h("span",{className:"text-xs font-bold text-blue-800"},"รวมเบี้ยประกัน / ปี"),
+              h("span",{className:"text-sm font-extrabold text-blue-700"},((a.cf_life_insurance||0)+(a.cf_health_insurance||0)+(a.cf_car_insurance||0)).toLocaleString("en-US")+" ฿"))))),
       // 6. ความเสี่ยงการลงทุน
       card("ความเสี่ยงในการลงทุน (Risk Profile)","📈","border-violet-100",
         h("div",{className:"grid grid-cols-1 md:grid-cols-3 gap-3"},
