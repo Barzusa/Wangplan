@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-07-11-link-premium-cashflow';
+const CACHE_VERSION = 'v2026-07-23-cihero-diseases';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
