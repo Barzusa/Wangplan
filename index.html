@@ -620,6 +620,27 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             var oc=document.createElement('canvas');oc.width=cw;oc.height=ch;oc.getContext('2d').drawImage(cv,mx0,my0,cw,ch,0,0,cw,ch);return oc;
           }catch(e){return cv;}
         }
+        function _dataURLtoBlob(u){try{var arr=u.split(','),m=(arr[0].match(/:(.*?);/)||[])[1]||'image/png',b=atob(arr[1]),n=b.length,u8=new Uint8Array(n);while(n--)u8[n]=b.charCodeAt(n);return new Blob([u8],{type:m});}catch(e){return null;}}
+        function wpShowImage(dataUrl,fname){
+          var ov=document.createElement('div');
+          ov.className='wp-pdf-hide';
+          ov.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;overflow:auto;padding:16px;font-family:"Sarabun","Noto Sans Thai",sans-serif;';
+          var bar=document.createElement('div');bar.style.cssText='width:100%;max-width:960px;display:flex;justify-content:space-between;align-items:center;gap:8px;color:#fff;margin-bottom:10px;flex-wrap:wrap;';
+          var hint=document.createElement('div');hint.style.cssText='font-size:14px;font-weight:700;';hint.textContent='📸 แตะค้างที่รูปเพื่อบันทึก';
+          var actions=document.createElement('div');actions.style.cssText='display:flex;gap:8px;';
+          var shareBtn=document.createElement('button');shareBtn.textContent='📤 แชร์ / บันทึก';shareBtn.style.cssText='background:#0f766e;color:#fff;border:0;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;';
+          var closeBtn=document.createElement('button');closeBtn.textContent='✕ ปิด';closeBtn.style.cssText='background:#374151;color:#fff;border:0;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;';
+          actions.appendChild(shareBtn);actions.appendChild(closeBtn);bar.appendChild(hint);bar.appendChild(actions);
+          var img=document.createElement('img');img.src=dataUrl;img.alt=fname;img.style.cssText='max-width:100%;height:auto;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);background:#fff;';
+          ov.appendChild(bar);ov.appendChild(img);document.body.appendChild(ov);
+          closeBtn.onclick=function(){ov.remove();};
+          ov.onclick=function(e){if(e.target===ov)ov.remove();};
+          shareBtn.onclick=function(){
+            var blob=_dataURLtoBlob(dataUrl);
+            try{if(blob&&navigator.canShare){var file=new File([blob],fname,{type:'image/png'});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:fname}).catch(function(){});return;}}}catch(e){}
+            try{var a=document.createElement('a');a.href=dataUrl;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);}catch(e){}
+          };
+        }
         function exportPDF(opts){
           opts=opts||{};
           var title=opts.title||'สรุปเบี้ยประกันภัย';
@@ -674,13 +695,9 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
               var _pngData=imgData;
               try{_pngData=autoCropCanvas(canvas,8).toDataURL('image/png');}catch(_e){_pngData=imgData;}
               var fname=filename(title).replace(/\.pdf$/i,'.png');
-              var a=document.createElement('a');
-              a.href=_pngData;
-              a.download=fname;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              toast('บันทึก PNG สำเร็จ','success');
+              var _isTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
+              if(_isTouch){wpShowImage(_pngData,fname);toast('แตะค้างที่รูป หรือกดแชร์ เพื่อบันทึก','success');}
+              else{try{var a=document.createElement('a');a.href=_pngData;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('บันทึก PNG สำเร็จ','success');}catch(_e2){wpShowImage(_pngData,fname);}}
               return;
             }
             var jsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
