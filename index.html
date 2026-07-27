@@ -669,6 +669,7 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             toast('ไม่พบเนื้อหาที่ต้องการบันทึก','error');
             return Promise.resolve();
           }
+          var _isProposal=(sel==='#proposal-target');
           var origPos=target.style.position;
           var origTop=target.style.top;
           var origWidth=target.style.width;
@@ -681,28 +682,33 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           scrollWrappers.forEach(function(el){origOverflows.push(el.style.overflow);el.style.overflow='visible';});
           target.style.position='static';
           target.style.top='auto';
-          target.style.alignSelf='start';
-          target.style.height='auto';
-          // Width adapts to content: wide only when a comparison table needs it,
-          // otherwise a compact readable width so rows aren't spread too far apart.
-          var _cmpTable=target.querySelector('.wp-cmp-table');
-          var _wantW=760;
-          if(_cmpTable){
-            // Measure the table's natural (shrink-to-fit) width, not its stretched
-            // full width, so columns sit close together instead of spread out.
-            var _tOw=_cmpTable.style.width,_tOmw=_cmpTable.style.minWidth;
-            target.style.width='3200px';target.style.minWidth='3200px';target.style.maxWidth='none';
-            _cmpTable.style.width='max-content';_cmpTable.style.minWidth='0';
-            target.offsetHeight;
-            var _natural=_cmpTable.scrollWidth;
-            _cmpTable.style.width=_tOw;_cmpTable.style.minWidth=_tOmw;
-            _wantW=Math.max(480,Math.min(_natural+48,2600));
+          var _wantW=1280;
+          if(_isProposal){
+            // เฉพาะหน้าคำนวณเบี้ย (สรุปเบี้ยประกันภัย): ปรับขนาดรูปตามเนื้อหาจริง
+            // ไม่กระทบหน้าสรุปกรมธรรม์ซึ่งใช้ขนาดคงที่แบบเดิมที่ดีอยู่แล้ว
+            target.style.alignSelf='start';
+            target.style.height='auto';
+            var _cmpTable=target.querySelector('.wp-cmp-table');
+            _wantW=760;
+            if(_cmpTable){
+              // Measure the table's natural (shrink-to-fit) width, not its stretched
+              // full width, so columns sit close together instead of spread out.
+              var _tOw=_cmpTable.style.width,_tOmw=_cmpTable.style.minWidth;
+              target.style.width='3200px';target.style.minWidth='3200px';target.style.maxWidth='none';
+              _cmpTable.style.width='max-content';_cmpTable.style.minWidth='0';
+              target.offsetHeight;
+              var _natural=_cmpTable.scrollWidth;
+              _cmpTable.style.width=_tOw;_cmpTable.style.minWidth=_tOmw;
+              _wantW=Math.max(480,Math.min(_natural+48,2600));
+            }
+            target.style.width=_wantW+'px';
+            target.style.minWidth=_wantW+'px';
+            target.style.maxWidth=_wantW+'px';
+          }else{
+            target.style.minWidth='1280px';
           }
-          target.style.width=_wantW+'px';
-          target.style.minWidth=_wantW+'px';
-          target.style.maxWidth=_wantW+'px';
           target.offsetHeight;
-          var _bw=Math.max(target.scrollWidth,1),_bh=Math.max(target.scrollHeight,1),_desired=Math.max(3,window.devicePixelRatio||2),_MAXAREA=1.6e7,_MAXDIM=8192,_wpScale=Math.max(1,Math.min(_desired,Math.sqrt(_MAXAREA/(_bw*_bh)),_MAXDIM/_bw,_MAXDIM/_bh));
+          var _bw=Math.max(target.scrollWidth,_wantW),_bh=Math.max(target.scrollHeight,1),_desired=Math.max(3,window.devicePixelRatio||2),_MAXAREA=1.6e7,_MAXDIM=8192,_wpScale=Math.max(1,Math.min(_desired,Math.sqrt(_MAXAREA/(_bw*_bh)),_MAXDIM/_bw,_MAXDIM/_bh));
           return window.html2canvas(target,{
             scale:_wpScale,
             useCORS:true,allowTaint:true,foreignObjectRendering:false,
