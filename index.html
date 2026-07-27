@@ -688,8 +688,15 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var _cmpTable=target.querySelector('.wp-cmp-table');
           var _wantW=760;
           if(_cmpTable){
-            target.style.width='2600px';target.style.minWidth='2600px';target.style.maxWidth='none';target.offsetHeight;
-            _wantW=Math.max(900,Math.min(_cmpTable.scrollWidth+56,2600));
+            // Measure the table's natural (shrink-to-fit) width, not its stretched
+            // full width, so columns sit close together instead of spread out.
+            var _tOw=_cmpTable.style.width,_tOmw=_cmpTable.style.minWidth;
+            target.style.width='3200px';target.style.minWidth='3200px';target.style.maxWidth='none';
+            _cmpTable.style.width='max-content';_cmpTable.style.minWidth='0';
+            target.offsetHeight;
+            var _natural=_cmpTable.scrollWidth;
+            _cmpTable.style.width=_tOw;_cmpTable.style.minWidth=_tOmw;
+            _wantW=Math.max(480,Math.min(_natural+48,2600));
           }
           target.style.width=_wantW+'px';
           target.style.minWidth=_wantW+'px';
