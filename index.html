@@ -673,12 +673,16 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var origTop=target.style.top;
           var origWidth=target.style.width;
           var origMinWidth=target.style.minWidth;
+          var origAlignSelf=target.style.alignSelf;
+          var origHeight=target.style.height;
           var scrollWrappers=target.querySelectorAll('.overflow-x-auto');
           var origOverflows=[];
           scrollWrappers.forEach(function(el){origOverflows.push(el.style.overflow);el.style.overflow='visible';});
           target.style.position='static';
           target.style.top='auto';
           target.style.minWidth='1280px';
+          target.style.alignSelf='start';
+          target.style.height='auto';
           target.offsetHeight;
           var _bw=Math.max(target.scrollWidth,1280),_bh=Math.max(target.scrollHeight,1),_desired=Math.max(3,window.devicePixelRatio||2),_MAXAREA=1.6e7,_MAXDIM=8192,_wpScale=Math.max(1,Math.min(_desired,Math.sqrt(_MAXAREA/(_bw*_bh)),_MAXDIM/_bw,_MAXDIM/_bh));
           return window.html2canvas(target,{
@@ -734,6 +738,8 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             target.style.top=origTop;
             target.style.width=origWidth;
             target.style.minWidth=origMinWidth;
+            target.style.alignSelf=origAlignSelf;
+            target.style.height=origHeight;
             if(wpGrid&&wpGrid.parentNode)wpGrid.parentNode.removeChild(wpGrid);if(wpCompact&&wpCompact.parentNode)wpCompact.parentNode.removeChild(wpCompact);scrollWrappers.forEach(function(el,i){el.style.overflow=origOverflows[i]||'';});
           });
         }
