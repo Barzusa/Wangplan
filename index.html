@@ -692,12 +692,26 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           }).then(function(canvas){
             var imgData=canvas.toDataURL('image/png');
             if(opts.format==='png'){
-              var _pngData=imgData;
-              try{_pngData=autoCropCanvas(canvas,8).toDataURL('image/png');}catch(_e){_pngData=imgData;}
+              var _outCv=canvas;
+              try{_outCv=autoCropCanvas(canvas,8);}catch(_e){_outCv=canvas;}
               var fname=filename(title).replace(/\.pdf$/i,'.png');
-              var _isTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
-              if(_isTouch){wpShowImage(_pngData,fname);toast('แตะค้างที่รูป หรือกดแชร์ เพื่อบันทึก','success');}
-              else{try{var a=document.createElement('a');a.href=_pngData;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);toast('บันทึก PNG สำเร็จ','success');}catch(_e2){wpShowImage(_pngData,fname);}}
+              var _dlData=function(){
+                var d=imgData;
+                try{d=_outCv.toDataURL('image/png');}catch(_e2){d=imgData;}
+                try{var a2=document.createElement('a');a2.href=d;a2.download=fname;document.body.appendChild(a2);a2.click();document.body.removeChild(a2);toast('บันทึก PNG สำเร็จ','success');}
+                catch(_e3){wpShowImage(d,fname);toast('แตะค้างที่รูป หรือกดแชร์ เพื่อบันทึก','success');}
+              };
+              if(_outCv.toBlob){
+                _outCv.toBlob(function(blob){
+                  if(!blob){_dlData();return;}
+                  try{
+                    var url=URL.createObjectURL(blob);
+                    var a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
+                    setTimeout(function(){URL.revokeObjectURL(url);},4000);
+                    toast('บันทึก PNG สำเร็จ','success');
+                  }catch(_e4){_dlData();}
+                },'image/png');
+              }else{_dlData();}
               return;
             }
             var jsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
