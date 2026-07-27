@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-07-27-png-fit-content';
+const CACHE_VERSION = 'v2026-07-27-png-adaptive-width';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
