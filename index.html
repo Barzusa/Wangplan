@@ -717,11 +717,18 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
               var _outCv=canvas;
               try{_outCv=autoCropCanvas(canvas,8);}catch(_e){_outCv=canvas;}
               var fname=filename(title).replace(/\.pdf$/i,'.png');
+              var _isTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
+              var _pngData=imgData;
+              try{_pngData=_outCv.toDataURL('image/png');}catch(_e2){_pngData=imgData;}
+              if(_isTouch){
+                // มือถือ/แท็บเล็ต: โชว์รูปเต็มจอ ให้แตะค้างเพื่อบันทึกลงรูปภาพโดยตรง (คุณภาพเต็ม ไม่ผ่านตัวจัดการไฟล์)
+                wpShowImage(_pngData,fname);
+                toast('แตะค้างที่รูปเพื่อบันทึก','success');
+                return;
+              }
               var _dlData=function(){
-                var d=imgData;
-                try{d=_outCv.toDataURL('image/png');}catch(_e2){d=imgData;}
-                try{var a2=document.createElement('a');a2.href=d;a2.download=fname;document.body.appendChild(a2);a2.click();document.body.removeChild(a2);toast('บันทึก PNG สำเร็จ','success');}
-                catch(_e3){wpShowImage(d,fname);toast('แตะค้างที่รูป หรือกดแชร์ เพื่อบันทึก','success');}
+                try{var a2=document.createElement('a');a2.href=_pngData;a2.download=fname;document.body.appendChild(a2);a2.click();document.body.removeChild(a2);toast('บันทึก PNG สำเร็จ','success');}
+                catch(_e3){wpShowImage(_pngData,fname);}
               };
               if(_outCv.toBlob){
                 _outCv.toBlob(function(blob){
