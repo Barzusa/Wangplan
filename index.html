@@ -624,17 +624,45 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           }catch(e){return cv;}
         }
         function _dataURLtoBlob(u){try{var arr=u.split(','),m=(arr[0].match(/:(.*?);/)||[])[1]||'image/png',b=atob(arr[1]),n=b.length,u8=new Uint8Array(n);while(n--)u8[n]=b.charCodeAt(n);return new Blob([u8],{type:m});}catch(e){return null;}}
+        function wpShowImageStyles(){
+          if(document.getElementById('wp-img-ov-style'))return;
+          var st=document.createElement('style');st.id='wp-img-ov-style';
+          st.textContent=
+            /* หน้าเว็บตั้ง viewport-fit=cover เนื้อหาจึงไหลไปใต้ status bar/notch
+               ต้องเผื่อ safe area ทุกด้าน ไม่งั้นแถบปุ่มจะทับนาฬิกา/แบตบน iPhone */
+            '.wp-img-ov{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.92);'+
+            'display:flex;flex-direction:column;align-items:center;overflow:auto;-webkit-overflow-scrolling:touch;'+
+            'padding:0 calc(10px + env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) calc(10px + env(safe-area-inset-left,0px));'+
+            'font-family:"Sarabun","Noto Sans Thai",sans-serif;}'+
+            /* แถบปุ่มลอยติดบนเสมอ รูปยาวแค่ไหนก็ยังกดปิด/แชร์ได้
+               กิน safe area ด้านบนไว้เองและยืดเต็มขอบจอ รูปจึงไม่เลื่อนโผล่ใต้นาฬิกา/แบต */
+            '.wp-img-bar{position:sticky;top:0;z-index:2;align-self:stretch;box-sizing:border-box;'+
+            'margin:0 calc(-10px - env(safe-area-inset-right,0px)) 8px calc(-10px - env(safe-area-inset-left,0px));'+
+            'display:flex;justify-content:space-between;align-items:center;gap:8px;color:#fff;background:#000;'+
+            'padding:calc(6px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-right,0px)) 8px calc(10px + env(safe-area-inset-left,0px));}'+
+            '.wp-img-hint{font-size:14px;font-weight:700;}'+
+            '.wp-img-actions{display:flex;gap:8px;flex:0 0 auto;}'+
+            '.wp-img-btn{color:#fff;border:0;padding:10px 16px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;}'+
+            '.wp-img-el{max-width:100%;height:auto;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);background:#fff;}'+
+            /* จอแคบ (iPhone แนวตั้ง): ข้อความกับปุ่มเบียดกันจนทับ จึงแยกเป็นคนละบรรทัด ปุ่มกว้างเท่ากัน */
+            '@media (max-width:640px){'+
+            '.wp-img-bar{flex-direction:column;align-items:stretch;gap:8px;}'+
+            '.wp-img-hint{text-align:center;font-size:13px;}'+
+            '.wp-img-actions{width:100%;}'+
+            '.wp-img-btn{flex:1 1 0;min-width:0;padding:11px 8px;}}';
+          document.head.appendChild(st);
+        }
         function wpShowImage(dataUrl,fname){
+          wpShowImageStyles();
           var ov=document.createElement('div');
-          ov.className='wp-pdf-hide';
-          ov.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;overflow:auto;padding:16px;font-family:"Sarabun","Noto Sans Thai",sans-serif;';
-          var bar=document.createElement('div');bar.style.cssText='width:100%;max-width:960px;display:flex;justify-content:space-between;align-items:center;gap:8px;color:#fff;margin-bottom:10px;flex-wrap:wrap;';
-          var hint=document.createElement('div');hint.style.cssText='font-size:14px;font-weight:700;';hint.textContent='📸 แตะค้างที่รูปเพื่อบันทึก';
-          var actions=document.createElement('div');actions.style.cssText='display:flex;gap:8px;';
-          var shareBtn=document.createElement('button');shareBtn.textContent='📤 แชร์ / บันทึก';shareBtn.style.cssText='background:#0f766e;color:#fff;border:0;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;';
-          var closeBtn=document.createElement('button');closeBtn.textContent='✕ ปิด';closeBtn.style.cssText='background:#374151;color:#fff;border:0;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;';
+          ov.className='wp-pdf-hide wp-img-ov';
+          var bar=document.createElement('div');bar.className='wp-img-bar';
+          var hint=document.createElement('div');hint.className='wp-img-hint';hint.textContent='📸 แตะค้างที่รูปเพื่อบันทึก';
+          var actions=document.createElement('div');actions.className='wp-img-actions';
+          var shareBtn=document.createElement('button');shareBtn.textContent='📤 แชร์ / บันทึก';shareBtn.className='wp-img-btn';shareBtn.style.background='#0f766e';
+          var closeBtn=document.createElement('button');closeBtn.textContent='✕ ปิด';closeBtn.className='wp-img-btn';closeBtn.style.background='#374151';
           actions.appendChild(shareBtn);actions.appendChild(closeBtn);bar.appendChild(hint);bar.appendChild(actions);
-          var img=document.createElement('img');img.src=dataUrl;img.alt=fname;img.style.cssText='max-width:100%;height:auto;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);background:#fff;';
+          var img=document.createElement('img');img.src=dataUrl;img.alt=fname;img.className='wp-img-el';
           ov.appendChild(bar);ov.appendChild(img);document.body.appendChild(ov);
           closeBtn.onclick=function(){ov.remove();};
           ov.onclick=function(e){if(e.target===ov)ov.remove();};
