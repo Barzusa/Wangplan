@@ -512,6 +512,9 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
 </script>
 
     <!-- Lucide React UMD (correct package) -->
+    <!-- lucide-react UMD อ่าน global ชื่อ react (ตัวเล็ก) แต่หน้านี้มีแค่ React (ตัวใหญ่)
+         ถ้าไม่ map ให้ ตัว bundle จะ throw ทันทีและ icon ทุกตัวกลายเป็นช่องว่าง -->
+    <script>window.react=window.React;</script>
     <script>/**
  * @license lucide-react v0.383.0 - ISC
  *
@@ -666,6 +669,9 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           if(!target){
             btns.forEach(function(b,i){b.style.visibility=btnVis[i]||'';});
             if(nav)nav.style.visibility=navVis;
+            // ต้องถอด style ที่ inject ไว้ด้วย ไม่งั้นค้างในหน้าถาวรและสะสมเพิ่มทุกครั้งที่ export พลาด
+            if(wpGrid&&wpGrid.parentNode)wpGrid.parentNode.removeChild(wpGrid);
+            if(wpCompact&&wpCompact.parentNode)wpCompact.parentNode.removeChild(wpCompact);
             toast('ไม่พบเนื้อหาที่ต้องการบันทึก','error');
             return Promise.resolve();
           }
@@ -718,23 +724,34 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             windowHeight:Math.max(target.scrollHeight,document.documentElement.offsetHeight),
             ignoreElements:function(el){return el&&el.classList&&(el.classList.contains('wp-pdf-button')||el.classList.contains('wp-bottom-nav')||el.classList.contains('wp-pdf-hide')||el.id==='wp-pdf-toast-wrap')}
           }).then(function(canvas){
-            var imgData=canvas.toDataURL('image/png');
             if(opts.format==='png'){
               var _outCv=canvas;
               try{_outCv=autoCropCanvas(canvas,8);}catch(_e){_outCv=canvas;}
               var fname=filename(title).replace(/\.pdf$/i,'.png');
               var _isTouch=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
-              var _pngData=imgData;
-              try{_pngData=_outCv.toDataURL('image/png');}catch(_e2){_pngData=imgData;}
+              // เข้ารหัส data URL แบบ lazy และครั้งเดียว: เส้นทาง blob (เดสก์ท็อป) ไม่ต้องใช้เลย
+              // เดิมเข้ารหัสภาพเต็มทิ้งเปล่าอีกรอบ กินเวลา/หน่วยความจำเท่าตัวบนมือถือ
+              var _pngCache;
+              var _png=function(){
+                if(_pngCache===undefined){
+                  try{_pngCache=_outCv.toDataURL('image/png');}
+                  catch(_e2){try{_pngCache=canvas.toDataURL('image/png');}catch(_e2b){_pngCache='';}}
+                }
+                return _pngCache;
+              };
               if(_isTouch){
                 // มือถือ/แท็บเล็ต: โชว์รูปเต็มจอ ให้แตะค้างเพื่อบันทึกลงรูปภาพโดยตรง (คุณภาพเต็ม ไม่ผ่านตัวจัดการไฟล์)
-                wpShowImage(_pngData,fname);
+                var _d=_png();
+                if(!_d){toast('สร้างรูปไม่สำเร็จ ลองใหม่อีกครั้ง','error');return;}
+                wpShowImage(_d,fname);
                 toast('แตะค้างที่รูปเพื่อบันทึก','success');
                 return;
               }
               var _dlData=function(){
-                try{var a2=document.createElement('a');a2.href=_pngData;a2.download=fname;document.body.appendChild(a2);a2.click();document.body.removeChild(a2);toast('บันทึก PNG สำเร็จ','success');}
-                catch(_e3){wpShowImage(_pngData,fname);}
+                var d=_png();
+                if(!d){toast('สร้างรูปไม่สำเร็จ ลองใหม่อีกครั้ง','error');return;}
+                try{var a2=document.createElement('a');a2.href=d;a2.download=fname;document.body.appendChild(a2);a2.click();document.body.removeChild(a2);toast('บันทึก PNG สำเร็จ','success');}
+                catch(_e3){wpShowImage(d,fname);}
               };
               if(_outCv.toBlob){
                 _outCv.toBlob(function(blob){
@@ -749,6 +766,7 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
               }else{_dlData();}
               return;
             }
+            var imgData=canvas.toDataURL('image/png');
             var jsPDF=(window.jspdf&&window.jspdf.jsPDF)||window.jsPDF;
             var pageW=210;
             var pageH=Math.round(canvas.height*pageW/canvas.width);
