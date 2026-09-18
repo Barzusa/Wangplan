@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-09-17-png-only-drop-pdf';
+const CACHE_VERSION = 'v2026-09-18-fix-citopup-stale-premium';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
