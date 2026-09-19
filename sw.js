@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-09-18-tpd-coverage-conditions';
+const CACHE_VERSION = 'v2026-09-19-care-cancer-unit-label';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
