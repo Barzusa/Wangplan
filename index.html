@@ -708,9 +708,14 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
           var origMaxWidth=target.style.maxWidth;
           var origAlignSelf=target.style.alignSelf;
           var origHeight=target.style.height;
-          var scrollWrappers=target.querySelectorAll('.overflow-x-auto');
-          var origOverflows=[];
-          scrollWrappers.forEach(function(el){origOverflows.push(el.style.overflow);el.style.overflow='visible';});
+          // กล่องที่เลื่อนได้ต้องคลายทั้ง overflow และ "ความสูงที่จำกัดไว้" พร้อมกัน
+          // ถ้าคลายแค่ overflow กล่องจะยังสูงเท่าเดิม แต่เนื้อหาโผล่ออกมาทับส่วนที่อยู่ถัดไป
+          var scrollWrappers=target.querySelectorAll('.overflow-x-auto,.overflow-y-auto');
+          var origOverflows=[],origMaxH=[],origH=[];
+          scrollWrappers.forEach(function(el){
+            origOverflows.push(el.style.overflow);origMaxH.push(el.style.maxHeight);origH.push(el.style.height);
+            el.style.overflow='visible';el.style.maxHeight='none';el.style.height='auto';
+          });
           target.style.position='static';
           target.style.top='auto';
           var _wantW=1280;
@@ -801,7 +806,7 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
             target.style.maxWidth=origMaxWidth;
             target.style.alignSelf=origAlignSelf;
             target.style.height=origHeight;
-            if(wpGrid&&wpGrid.parentNode)wpGrid.parentNode.removeChild(wpGrid);if(wpCompact&&wpCompact.parentNode)wpCompact.parentNode.removeChild(wpCompact);scrollWrappers.forEach(function(el,i){el.style.overflow=origOverflows[i]||'';});
+            if(wpGrid&&wpGrid.parentNode)wpGrid.parentNode.removeChild(wpGrid);if(wpCompact&&wpCompact.parentNode)wpCompact.parentNode.removeChild(wpCompact);scrollWrappers.forEach(function(el,i){el.style.overflow=origOverflows[i]||'';el.style.maxHeight=origMaxH[i]||'';el.style.height=origH[i]||'';});
           });
         }
         return {export:exportPDF,toast:toast,filename:filename};
