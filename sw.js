@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-09-28-static-css';
+const CACHE_VERSION = 'v2026-09-28-repair-old-clients';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
