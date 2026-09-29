@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-09-28-save-status';
+const CACHE_VERSION = 'v2026-09-29-vendor-h2c-zero-riders';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
@@ -14,7 +14,8 @@ const APP_SHELL = [
   './icon-192x192.png',
   './icon-512x512.png',
   './apple-touch-icon.png',
-  './wangplan_icon.svg'
+  './wangplan_icon.svg',
+  './vendor/html2canvas-pro.min.js'
 ];
 
 // Install: cache ทุกไฟล์ทันที แล้วข้ามไปทำงานเลย
