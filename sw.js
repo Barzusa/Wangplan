@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2026-09-30-premium-age-bands';
+const CACHE_VERSION = 'v2026-09-30-hide-totals';
 const CACHE_NAME = 'wangplan-' + CACHE_VERSION;
 
 // รับข้อความจากหน้าเว็บให้ข้ามคิว waiting (ใช้ตอนตรวจเจอ SW ใหม่)
