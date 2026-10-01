@@ -10,16 +10,18 @@ for (const c of PALETTE) DYNAMIC.push(`border-${c}-500`,`border-${c}-400`,`borde
 const classes = [...new Set([...JSON.parse(fs.readFileSync(D + '/classes.json','utf8')), ...DYNAMIC])];
 
 const body = classes.map((c, i) => `<div data-i="${i}" class="${c.replace(/"/g,'&quot;')}"></div>`).join('');
-const engine = fs.readFileSync(D + '/tw_engine.js','utf8');
+const engine = fs.readFileSync(D + '/tailwind-engine.js','utf8');
 const css = fs.readFileSync(D + '/tw_static.css','utf8');
 
-fs.writeFileSync(D + '/cmp_engine.html', `<!DOCTYPE html><html><head><script>${engine}<\/script></head><body>${body}</body></html>`);
-fs.writeFileSync(D + '/cmp_static.html', `<!DOCTYPE html><html><head><style>${css}</style></head><body>${body}</body></html>`);
+const PAGES = {
+  engine: `<!DOCTYPE html><html><head><script>${engine}<\/script></head><body>${body}</body></html>`,
+  static: `<!DOCTYPE html><html><head><style>${css}</style></head><body>${body}</body></html>`,
+};
 
 const snap = async (url, engineMode) => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
-  await p.goto(url, { waitUntil: 'domcontentloaded' });
+  await p.setContent(PAGES[url], { waitUntil: 'domcontentloaded' });
   if (engineMode) {
     await p.evaluate(async () => {
       const find = () => [...document.querySelectorAll('style')].find(s => s.textContent.startsWith('/*! tailwindcss'));
@@ -41,8 +43,8 @@ const snap = async (url, engineMode) => {
 };
 
 (async () => {
-  const [a, c] = [await snap('http://127.0.0.1:8899/cmp_engine.html', true),
-                  await snap('http://127.0.0.1:8899/cmp_static.html', false)];
+  const [a, c] = [await snap('engine', true),
+                  await snap('static', false)];
   let bad = 0; const examples = [];
   for (let i = 0; i < classes.length; i++) {
     const A = a[i] || {}, C = c[i] || {};

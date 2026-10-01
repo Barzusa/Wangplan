@@ -14,17 +14,16 @@ for (const c of PALETTE) {
 const classes = [...new Set([...JSON.parse(fs.readFileSync(D + '/classes.json', 'utf8')), ...DYNAMIC])];
 
 // Page that loads only the engine plus a node carrying every class.
-const engine = fs.readFileSync(D + '/tw_engine.js', 'utf8');
+const engine = fs.readFileSync(D + '/tailwind-engine.js', 'utf8');
 const html = `<!DOCTYPE html><html><head><script>${engine}<\/script></head><body>
 <div id="all" class="${classes.join(' ').replace(/"/g, '&quot;')}"></div></body></html>`;
-fs.writeFileSync(D + '/twgen.html', html);
 
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const p = await b.newPage();
   const errs = [];
   p.on('pageerror', e => errs.push(e.message.slice(0, 200)));
-  await p.goto('http://127.0.0.1:8899/twgen.html', { waitUntil: 'domcontentloaded' });
+  await p.setContent(html, { waitUntil: 'domcontentloaded' });
   // Let the MutationObserver-driven engine settle: poll until the stylesheet stops growing.
   const css = await p.evaluate(async () => {
     const find = () => [...document.querySelectorAll('style')].find(s => s.textContent.startsWith('/*! tailwindcss'));

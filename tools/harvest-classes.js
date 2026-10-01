@@ -39,6 +39,30 @@ const frags = new Set();
 const reFrag = /"([a-z-]+-)"\.concat\(/g;
 while ((m = reFrag.exec(s))) frags.add(m[1]);
 
+// Never drop what the shipped stylesheet already has: a class built at runtime in a way
+// this scan can't see would otherwise lose its rule. Regenerating is then always a superset.
+const mk = s.indexOf('<!-- Tailwind CSS v3 — precompiled');
+if (mk >= 0) {
+  const a = s.indexOf('<style>', mk), b = s.indexOf('</style>', a);
+  const css = s.slice(a + 7, b);
+  const reSel = /\.((?:\\.|[A-Za-z0-9_-])+)/g;
+  let k = 0;
+  while ((m = reSel.exec(css))) { const c = m[1].replace(/\\(.)/g, '$1'); if (!/^\d/.test(c)) { set.add(c); k++; } }
+  console.log('kept from current stylesheet:', k);
+}
+
+// Colour classes assembled by concatenation ("bg-".concat(color,"-600")): expand every
+// shade for each Tailwind colour name the data actually passes in (color:"orange" …).
+const PALETTE = ['slate','gray','zinc','neutral','stone','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'];
+const used = new Set();
+const reCol = new RegExp('color:"(' + PALETTE.join('|') + ')"', 'g');
+while ((m = reCol.exec(s))) used.add(m[1]);
+for (const c of used) for (const sh of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]) {
+  for (const f of ['bg', 'text', 'border']) set.add(`${f}-${c}-${sh}`);
+  set.add(`hover:border-${c}-${sh}`); set.add(`hover:bg-${c}-${sh}`);
+}
+console.log('colours expanded:', [...used].join(' '));
+
 const out = [...set].sort();
 fs.writeFileSync(OUT, JSON.stringify(out));
 console.log('classes:', out.length);
